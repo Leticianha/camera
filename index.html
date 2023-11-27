@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAMERA</title>
+    <style>
+        @font-face {
+            font-family: 'young';
+            src: url(font/YoungSerif-Regular.ttf);
+        }
+
+        @font-face {
+            font-family: 'poppins';
+            src: url(font/Poppins-Regular.ttf);
+        }
+
+        * {
+            margin: 0;
+            box-sizing: border-box;
+            text-align: center;
+            align-items: center;
+        }
+
+        body {
+            background-color: #F8F1EE;
+        }
+
+        h1 {
+            font-family: 'young';
+            color: #522318;
+            margin-top: 50px;
+        }
+
+        h3 {
+            font-family: 'poppins';
+            color: #522318;
+            margin-bottom: 30px;
+        }
+
+        #foto {
+            height: 300px;
+            width: 300px;
+            border-radius: 50px;
+            background-size: cover;
+            background-position: 50%;
+            margin: 20px;
+        }
+
+        #camera {
+            width: 640px;
+            margin: 20px;
+            border-radius: 50px;
+            transform: scaleX(-1);
+        }
+
+        button {
+            background-color: #522318;
+            color: #F8F1EE;
+            font-family: 'poppins';
+            border-radius: 20px;
+            margin-bottom: 10px;
+            border: none;
+        }
+
+        button:hover {
+            background-color: #A27F77;
+            color: #522318;
+            font-weight: 400;
+        }
+
+        #container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .foto-container {
+            display: flex;
+            align-items: center;
+        }
+        .container {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        #frase {
+            font-family: 'poppins';
+            color: #522318;
+            margin-left: 20px;
+            max-width: 300px;
+            /* Ajuste conforme necessário */
+        }
+
+        #download-link-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            margin: 0 20%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>F</h1>
+    <h3>Tire uma foto aleatória, e veja a frase que irá se formar com base dos nossos livros!</h3>
+
+    <div class="container">
+        <video id="camera" autoplay></video>
+        <div class="foto-container">
+            <div id="foto"></div>
+            <p id="frase"></p>
+        </div>
+        <div class="buttons">
+            <button onclick="abrirCamera()">Abrir camera</button>
+            <button onclick="tirarFoto()">Tirar foto</button>
+            <button onclick="fechar()">Fechar camera</button>
+        </div>
+        <div id="download-link-container"></div>
+    </div>
+
+
+    <script>
+        var mediaStream;
+        var downloadLink;
+
+        function abrirCamera() {
+            navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                .then(function (stream) {
+                    mediaStream = stream;
+                    const areaVideo = document.getElementById('camera');
+                    areaVideo.srcObject = stream;
+                })
+                .catch(function (error) {
+                    console.log('Error ao acessar a câmera', error);
+                })
+        }
+
+        function tirarFoto() {
+            const areaVideo = document.getElementById('camera');
+            const canvas = document.createElement('canvas');
+            canvas.width = areaVideo.videoWidth;
+            canvas.height = areaVideo.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(areaVideo, 0, 0, canvas.width, canvas.height);
+            const imageDataURL = canvas.toDataURL();
+            const fotoDiv = document.getElementById('foto');
+            fotoDiv.style.backgroundImage = `url(${imageDataURL})`;
+
+            // Armazena a última foto no LocalStorage
+            localStorage.setItem('lastPhoto', imageDataURL);
+
+            // Array de frases
+            const frases = [
+                'Uma bela captura!',
+                'Momento inesquecível!',
+                'Sorriso radiante!',
+                'A arte da fotografia!',
+                // Adicione mais frases conforme necessário
+            ];
+
+            // Gerador de número aleatório para selecionar uma frase
+            const numeroAleatorio = Math.floor(Math.random() * frases.length);
+            const fraseSelecionada = frases[numeroAleatorio];
+
+            // Exibe a frase
+            const fraseElement = document.getElementById('frase');
+            fraseElement.textContent = fraseSelecionada;
+
+            // Atualiza o link para download
+            if (downloadLink) {
+                downloadLink.href = imageDataURL;
+            } else {
+                downloadLink = document.createElement('a');
+                downloadLink.href = imageDataURL;
+                downloadLink.download = 'foto.png';
+                downloadLink.textContent = 'Clique para baixar';
+                document.getElementById('download-link-container').appendChild(downloadLink);
+            }
+        }
+
+        function baixarFoto() {
+            // Obtém a última foto do LocalStorage
+            const lastPhoto = localStorage.getItem('lastPhoto');
+
+            if (lastPhoto) {
+                // Cria um link temporário para baixar a última foto
+                const tempLink = document.createElement('a');
+                tempLink.href = lastPhoto;
+                tempLink.download = 'last_photo.png';
+                tempLink.click();
+            } else {
+                alert('Nenhuma foto disponível para download.');
+            }
+        }
+
+        function fechar() {
+            navigator.mediaDevices.getUserMedia({ video: false });
+            const areaVideo = document.getElementById('camera');
+            areaVideo.srcObject = null;
+            mediaStream = null;
+        }
+    </script>
+
+
+</body>
+
+</html>
