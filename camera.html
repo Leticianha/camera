@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>CAMERA</title>
+    <style>
+        @font-face {
+            font-family: 'young';
+            src: url(font/YoungSerif-Regular.ttf);
+        }
+
+        @font-face {
+            font-family: 'poppins';
+            src: url(font/Poppins-Regular.ttf);
+        }
+
+        * {
+            margin: 0;
+            box-sizing: border-box;
+            text-align: center;
+            align-items: center;
+        }
+
+        body {
+            background-color: #F8F1EE;
+        }
+
+        h1 {
+            font-family: 'young';
+            color: #522318;
+            margin-top: 80px;
+            text-transform: uppercase;
+        }
+
+        h3 {
+            font-family: 'poppins';
+            color: #522318;
+            margin-bottom: 30px;
+        }
+
+        #foto {
+            height: 300px;
+            width: 300px;
+            border-radius: 50px;
+            background-size: cover;
+            background-position: 50%;
+            margin: 20px;
+            transform: scaleX(-1);
+        }
+
+        #camera {
+            width: 640px;
+            margin: 20px;
+            border-radius: 50px;
+            transform: scaleX(-1);
+        }
+
+        button {
+            background-color: #522318;
+            color: #F8F1EE;
+            font-family: 'poppins';
+            border-radius: 20px;
+            margin-bottom: 10px;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #A27F77;
+            color: #522318;
+            font-weight: 400;
+        }
+
+        #conteudo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .foto-container {
+            display: flex;
+            align-items: center;
+        }
+        .conteudo {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        #frase {
+            font-family: 'poppins';
+            color: #522318;
+            margin-left: 20px;
+            max-width: 300px;
+            /* Ajuste conforme necessário */
+        }
+
+        #download-link-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            margin: 0 20%;
+            cursor: pointer;
+            color: #522318;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header id="header">
+        <div class="container-fundo">
+            <div class="container">
+                <a href="index.html">
+                    <div class="logo">
+                        <img src="img-interface/lenabi 1.png" alt="borboleta voando dentro de um livro">
+                        <h2>LeNabi</h2>
+                    </div>
+                </a>
+                <div class="buscar">
+                    <input type="text" id="buscar" placeholder="Buscar livro" oninput="buscarProduto()">
+                </div>
+
+                <div id="favoritos" onclick="toggleFavoritos()">
+                    <div class="imagem">
+                        <i class="fa-regular fa-heart" style="color: #522318; "></i>
+                    </div>
+                    <span id="cont-favoritos">0</span>
+                </div>
+                <div id="carrinho-itens" style="display: none;">
+                    <ul id="itens-lista"></ul>
+                    <span id="preco-total">Valor Total: R$0,00</span>
+                    <button class="car" onclick="limparCarrinho()">Limpar Carrinho</button>
+                </div>
+                <!-- Dentro da div do usuário logado -->
+                <div class="usuario-logado" id="userHeader" onclick="mostrarPopup()">
+                    <i class="fa-solid fa-user" style="color: #522318;"></i>
+                    <span id="nomeUsuario"></span>
+                </div>
+                <div id="popup" style="display: none;">
+                    <div class="popup-conteudo">
+                        <img src="img-interface/Group 20.svg" alt="">
+                        <span id="nomeUsuario"></span>
+                    </div>
+                    <i id="logoutButton" class="fa-solid fa-arrow-right-from-bracket" onclick="logout()"></i>
+
+                </div>
+
+
+                <a href="login.html" class="button" id="loginButton"><span>Fazer login</span></a>
+            </div>
+        </div>
+        <nav>
+            <div class="botoes">
+                <a href="produto.html#pre-venda">Pré-Venda</a>
+                <a href="produto.html#lancamentos-page">Lançamentos</a>
+                <a href="produto.html">Produtos</a>
+                <a href="sustentabilidade.html">Sustentabilidade</a>
+
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Desperte sua Criatividade Literária</h1>
+        <h3>Tire uma foto aleatória e descubra a frase surpreendente que emergirá dos nossos livros!</h3>
+    
+        <div class="conteudo">
+            <video id="camera" autoplay></video>
+            <div class="foto-container">
+                <div id="foto"></div>
+                <p id="frase"></p>
+            </div>
+            <div class="buttons">
+                <button onclick="abrirCamera()">Abrir camera</button>
+                <button onclick="tirarFoto()">Tirar foto</button>
+                <button onclick="fechar()">Fechar camera</button>
+            </div>
+            <div id="download-link-container"></div>
+        </div>
+    </main>
+
+
+    <script>
+        var mediaStream;
+        var downloadLink;
+
+        function abrirCamera() {
+            navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                .then(function (stream) {
+                    mediaStream = stream;
+                    const areaVideo = document.getElementById('camera');
+                    areaVideo.srcObject = stream;
+                })
+                .catch(function (error) {
+                    console.log('Error ao acessar a câmera', error);
+                })
+        }
+
+        function tirarFoto() {
+            const areaVideo = document.getElementById('camera');
+            const canvas = document.createElement('canvas');
+            canvas.width = areaVideo.videoWidth;
+            canvas.height = areaVideo.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(areaVideo, 0, 0, canvas.width, canvas.height);
+            const imageDataURL = canvas.toDataURL();
+            const fotoDiv = document.getElementById('foto');
+            fotoDiv.style.backgroundImage = `url(${imageDataURL})`;
+
+            // Array de frases
+            const frases = [
+                'Todo mundo quer alguém que segure um espelho que mostre a imagem certa de você.',
+                'Até que precisam se unir para derrotar os outros alunos no tradicional jogo para formandos.',
+                'É minha a força, e a luxuria, e o poder!',
+                'Cada coisa que vivenciamos é, basicamente, apenas a nossa percepção dela.',
+                'Não sei se posso consertar seu coração partido, mas você pode ficar com o meu, porque ele já é seu.',
+                'A confiança é fruto de um relacionamento em que você sabe que é amado.'
+            ];
+
+            // Gerador de número aleatório para selecionar uma frase
+            const numeroAleatorio = Math.floor(Math.random() * frases.length);
+            const fraseSelecionada = frases[numeroAleatorio];
+
+            // Exibe a frase
+            const fraseElement = document.getElementById('frase');
+            fraseElement.textContent = fraseSelecionada;
+
+            // Atualiza o link para download
+            if (downloadLink) {
+                downloadLink.href = imageDataURL;
+            } else {
+                downloadLink = document.createElement('a');
+                downloadLink.href = imageDataURL;
+                downloadLink.download = 'foto.png';
+                downloadLink.textContent = 'Clique para baixar';
+                document.getElementById('download-link-container').appendChild(downloadLink);
+            }
+        }
+
+        function fechar() {
+            navigator.mediaDevices.getUserMedia({ video: false });
+            const areaVideo = document.getElementById('camera');
+            areaVideo.srcObject = null;
+            mediaStream = null;
+        }
+        
+        if (window.reload) {
+            fotoDiv.style.backgroundImage = `url(${imageDataURL})`;
+        localStorage.getItem("foto")
+        }
+    </script>
+
+
+</body>
+
+</html>
